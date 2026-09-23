@@ -1,0 +1,25 @@
+<!-- Drag-and-Drop CSV Upload Component -->
+<div class="upload-card">
+    <div id="dropZone" class="drop-zone" onclick="document.getElementById('csvFileInput').click()">
+        <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" x2="12" y1="3" y2="15"></line>
+        </svg>
+        <div class="drop-zone-title">Drop your CSV dataset here</div>
+        <div class="drop-zone-subtitle">or click to browse your computer (.csv files up to 150MB)</div>
+        <input type="file" id="csvFileInput" hidden accept=".csv,text/csv" onchange="handleFileSelect(event)">
+    </div>
+
+    <!-- Upload Progress & Status -->
+    <div id="uploadProgressContainer" class="upload-progress-container">
+        <div class="upload-file-meta">
+            <span id="uploadFileName">filename.csv</span>
+            <span id="uploadProgressPct">0%</span>
+        </div>
+        <div class="progress-track">
+            <div id="uploadProgressBar" class="progress-bar-fill"></div>
+        </div>
+    </div>
+</div>
+

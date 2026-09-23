@@ -1,0 +1,50 @@
+<!-- Modern Conversational Analytics Interface Component -->
+<div class="chat-section">
+    <div class="chat-header">
+        <div class="chat-header-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Analytics Assistant</span>
+        </div>
+        <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="clearChatHistory()">Clear Chat</button>
+    </div>
+
+    <!-- Chat Message Stream -->
+    <div id="chatWindow" class="chat-window">
+        <!-- Initial Welcome Message from Bot -->
+        <div class="chat-row bot-row">
+            <div class="chat-avatar bot">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+                    <rect width="18" height="12" x="3" y="8" rx="2"/>
+                    <circle cx="9" cy="14" r="1"/>
+                    <circle cx="15" cy="14" r="1"/>
+                </svg>
+            </div>
+            <div class="chat-bubble-container">
+                <div class="chat-bubble">
+                    Hello! I'm your AI Data Analyst. Upload a CSV file or ask any question about your data to get instant statistical insights, comparisons, and charts.
+                </div>
+                <span class="chat-meta-time">Ready</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern Large Input Bar -->
+    <div class="chat-input-wrapper">
+        <div class="query-input-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="userInput" placeholder="Ask anything about your data... (e.g. Total sales in North region, or top 5 products)" onkeydown="handleInputKey(event)" autocomplete="off">
+            <button id="sendBtn" class="send-btn" title="Send Question" onclick="submitUserQuestion()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>

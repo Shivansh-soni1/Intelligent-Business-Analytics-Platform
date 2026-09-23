@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}AI Data Analyst - SaaS Analytics Platform{% endblock %}
+
+{% block content %}
+
+<!-- 1. EMPTY STATE WELCOME SCREEN (Shown when no dataset is loaded) -->
+<div id="emptyStateHero" class="empty-state-hero">
+    <div class="empty-state-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+    </div>
+    <h2>Turn your data into instant insights</h2>
+    <p>Upload any CSV dataset and ask questions in natural language. Our autonomous data analyst executes statistical calculations, trends, rankings, and charts on the fly.</p>
+    
+    <button class="btn-primary" style="padding: 12px 28px; font-size: 1rem;" onclick="switchTab('upload-view')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" x2="12" y1="3" y2="15"></line>
+        </svg>
+        <span>Upload CSV Dataset</span>
+    </button>
+
+    <!-- Example Questions Preview -->
+    <div class="sample-queries-box">
+        <div class="sample-queries-title">Example Analytical Queries You Can Ask</div>
+        <div class="sample-queries-grid">
+            <div class="sample-query-card" onclick="startWithQuery('What is the total sales?')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                <span>What is the total sales?</span>
+            </div>
+            <div class="sample-query-card" onclick="startWithQuery('Which region performs best?')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span>Which region performs best?</span>
+            </div>
+            <div class="sample-query-card" onclick="startWithQuery('Show monthly sales trend')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                <span>Show monthly sales trend</span>
+            </div>
+            <div class="sample-query-card" onclick="startWithQuery('Find the top 5 products')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                <span>Find the top 5 products</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. UPLOAD VIEW TAB -->
+<div id="upload-view" class="view-panel" style="display: none;">
+    {% include "upload.html" %}
+</div>
+
+<!-- 3. DASHBOARD VIEW TAB -->
+<div id="dashboard-view" class="view-panel">
+    <!-- Dataset Overview Cards -->
+    {% include "dashboard.html" %}
+
+    <!-- Integrated Chat / Analysis Workspace -->
+    <div style="margin-top: 24px;">
+        {% include "chat.html" %}
+    </div>
+</div>
+
+<!-- 4. DATA QUALITY VIEW TAB -->
+<div id="quality-view" class="view-panel" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Data Validation & Quality Audit</h2>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">Automated dataset cleaning, anomaly detection, and type sanitization report.</p>
+        </div>
+        <button class="btn-secondary" onclick="loadQualityReport()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            </svg>
+            <span>Refresh Audit</span>
+        </button>
+    </div>
+
+    <!-- Quality Gauge Card -->
+    <div class="quality-gauge-card">
+        <div class="quality-score-circle" id="qualityGaugeCircle" style="--score: 100;">
+            <span class="quality-score-val" id="qualityScoreVal">--%</span>
+        </div>
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">Overall Data Health</h3>
+                <span id="qualityHealthBadge" class="status-badge badge-on-track">Ready</span>
+            </div>
+            <p id="qualityHealthDesc" style="font-size: 0.9rem; color: var(--text-secondary); max-width: 580px; line-height: 1.5;">
+                Upload a CSV dataset to run automated validation, duplicate removal, currency sanitization, and date standardization.
+            </p>
+        </div>
+    </div>
+
+    <!-- Quality Before vs After Stats Grid -->
+    <div class="quality-stats-grid">
+        <div class="quality-stat-card">
+            <div class="label">Rows (Before → After)</div>
+            <div class="value" id="qRowsStat">0 → 0</div>
+        </div>
+        <div class="quality-stat-card">
+            <div class="label">Duplicates Removed</div>
+            <div class="value" id="qDuplicatesStat" style="color: var(--danger);">0</div>
+        </div>
+        <div class="quality-stat-card">
+            <div class="label">Missing Values Resolved</div>
+            <div class="value" id="qMissingStat" style="color: var(--warning);">0</div>
+        </div>
+        <div class="quality-stat-card">
+            <div class="label">Dates Standardized</div>
+            <div class="value" id="qDatesStat" style="color: var(--primary);">0</div>
+        </div>
+        <div class="quality-stat-card">
+            <div class="label">Currency Strings Sanitized</div>
+            <div class="value" id="qNumericStat" style="color: var(--success);">0</div>
+        </div>
+        <div class="quality-stat-card">
+            <div class="label">Chronological Anomalies</div>
+            <div class="value" id="qChronoStat" style="color: var(--purple);">0</div>
+        </div>
+    </div>
+
+    <!-- Operations Performed Log -->
+    <div class="table-preview-card" style="margin-bottom: 24px;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 14px;">Transformation & Cleaning Operations</h3>
+        <ul id="qualityOperationsList" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+            <li style="color: var(--text-muted); font-size: 0.9rem;">No dataset uploaded yet.</li>
+        </ul>
+    </div>
+</div>
+
+<!-- 5. KPIS & TARGETS VIEW TAB -->
+<div id="kpi-view" class="view-panel" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">KPI & Target Monitoring</h2>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">Track real-time performance, elapsed vs. expected progress, and performance gaps.</p>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn-secondary" onclick="checkCsvUpdatesNow()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                </svg>
+                <span>Sync CSV Updates</span>
+            </button>
+            <button class="btn-secondary" onclick="evaluateAllKpis()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>Evaluate All</span>
+            </button>
+            <button class="btn-primary" onclick="openKpiModal()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>+ Create Target KPI</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Summary Counters -->
+    <div class="quality-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+        <div class="quality-stat-card">
+            <div class="label">Total KPIs</div>
+            <div class="value" id="kpiTotalCount">0</div>
+        </div>
+        <div class="quality-stat-card">
+            <div class="label">On Track</div>
+            <div class="value" id="kpiOnTrackCount" style="color: var(--success);">0</div>
+        </div>
+        <div class="quality-stat-card">
+            <div class="label">At Risk</div>
+            <div class="value" id="kpiAtRiskCount" style="color: var(--warning);">0</div>
+        </div>
+        <div class="quality-stat-card">
+            <div class="label">Critical</div>
+            <div class="value" id="kpiCriticalCount" style="color: var(--danger);">0</div>
+        </div>
+        <div class="quality-stat-card">
+            <div class="label">Exceeded</div>
+            <div class="value" id="kpiExceededCount" style="color: var(--primary);">0</div>
+        </div>
+    </div>
+
+    <!-- Dynamic KPI Cards Grid -->
+    <div id="kpiCardsContainer" class="kpi-cards-grid">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: var(--bg-surface); border: 1px dashed var(--border-color); border-radius: var(--radius-lg);">
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 12px;">No KPIs defined yet. Click <strong>+ Create Target KPI</strong> to configure your first business target.</p>
+            <button class="btn-secondary" onclick="openKpiModal()">Create KPI Target</button>
+        </div>
+    </div>
+</div>
+
+<!-- 6. ALERT HISTORY VIEW TAB -->
+<div id="alerts-view" class="view-panel" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Automated Alert History</h2>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">Audit trail of threshold breaches, severity levels, and automated email notifications.</p>
+        </div>
+        <button class="btn-secondary" onclick="loadAlertHistory()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            </svg>
+            <span>Refresh Alerts</span>
+        </button>
+    </div>
+
+    <div class="filter-btn-group">
+        <button class="filter-pill active" onclick="filterAlerts('ALL', this)">All Alerts</button>
+        <button class="filter-pill" onclick="filterAlerts('CRITICAL', this)">🔴 Critical</button>
+        <button class="filter-pill" onclick="filterAlerts('WARNING', this)">🟡 Warning / At Risk</button>
+        <button class="filter-pill" onclick="filterAlerts('INFO', this)">🟢 Target Exceeded</button>
+    </div>
+
+    <div class="table-preview-card">
+        <div class="table-responsive">
+            <table class="dataset-table" id="alertsTable">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>KPI Name</th>
+                        <th>Alert Type</th>
+                        <th>Severity</th>
+                        <th>Actual / Target</th>
+                        <th>Performance Gap</th>
+                        <th>Email Status</th>
+                    </tr>
+                </thead>
+                <tbody id="alertsTableBody">
+                    <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No alerts recorded yet.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 7. DATASET PREVIEW TAB -->
+<div id="preview-view" class="view-panel" style="display: none;">
+    <div class="table-preview-card">
+        <div class="table-controls">
+            <div>
+                <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Dataset Records Preview</h3>
+                <span id="previewRecordCount" style="font-size: 0.82rem; color: var(--text-muted);">Showing first 100 loaded records</span>
+            </div>
+            <div class="table-search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="tableSearchInput" placeholder="Filter records..." oninput="filterPreviewTable()">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="dataset-table" id="datasetPreviewTable">
+                <thead id="previewTableHead">
+                    <tr><th>Upload a CSV file to view data records</th></tr>
+                </thead>
+                <tbody id="previewTableBody">
+                    <tr><td>No active dataset loaded.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-pagination">
+            <span id="paginationInfo">Page 1 of 1</span>
+            <div style="display: flex; gap: 8px;">
+                <button id="prevPageBtn" class="btn-secondary" style="padding: 4px 12px;" onclick="changePreviewPage(-1)" disabled>Previous</button>
+                <button id="nextPageBtn" class="btn-secondary" style="padding: 4px 12px;" onclick="changePreviewPage(1)" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Creation Modal Dialog -->
+<div id="kpiModal" class="modal-overlay">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Configure KPI Target</h3>
+            <button class="btn-icon" onclick="closeKpiModal()">&times;</button>
+        </div>
+        <form id="kpiForm" onsubmit="handleCreateKpi(event)">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="kpiNameInput">KPI Name</label>
+                    <input type="text" id="kpiNameInput" class="form-control" placeholder="e.g. Monthly Revenue Target" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label for="kpiMetricColSelect">Metric Column</label>
+                        <select id="kpiMetricColSelect" class="form-control" required>
+                            <option value="">-- Select Column --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kpiCalcSelect">Calculation</label>
+                        <select id="kpiCalcSelect" class="form-control" required>
+                            <option value="SUM">SUM</option>
+                            <option value="AVERAGE">AVERAGE</option>
+                            <option value="COUNT">COUNT</option>
+                            <option value="MEDIAN">MEDIAN</option>
+                            <option value="MIN">MIN</option>
+                            <option value="MAX">MAX</option>
+                            <option value="RATE">RATE / %</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label for="kpiTargetValInput">Target Value</label>
+                        <input type="number" step="any" id="kpiTargetValInput" class="form-control" placeholder="e.g. 500000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="kpiPeriodSelect">Monitoring Period</label>
+                        <select id="kpiPeriodSelect" class="form-control">
+                            <option value="Monthly">Monthly</option>
+                            <option value="Quarterly">Quarterly</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Yearly">Yearly</option>
+                            <option value="Daily">Daily</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label for="kpiStartDateInput">Start Date</label>
+                        <input type="date" id="kpiStartDateInput" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="kpiEndDateInput">End Date</label>
+                        <input type="date" id="kpiEndDateInput" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="kpiThresholdInput">Alert Tolerance Threshold (%)</label>
+                    <input type="number" id="kpiThresholdInput" class="form-control" value="10" min="1" max="100">
+                </div>
+                <div class="form-group">
+                    <label for="kpiRecipientsInput">Email Notification Recipients</label>
+                    <input type="text" id="kpiRecipientsInput" class="form-control" placeholder="manager@example.com, team@example.com">
+                    <small style="color: var(--text-muted); font-size: 0.78rem;">Comma-separated emails. Protected by anti-spam cooldown.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeKpiModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Save & Monitor</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
